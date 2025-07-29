@@ -1,6 +1,0 @@
-name = "syncflow-website"
-compatibility_date = "2025-07-29" # השתמש בתאריך של היום
-
-[[pages.functions]]
-# This will match all routes under /functions/*
-pattern = "/functions/*"
