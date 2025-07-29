@@ -92,8 +92,8 @@
           var data = Object.fromEntries(formData.entries());
 
           // הנתיב החדש והישיר לפונקציה
-          const endpoint = "/send-webhook";
-          
+          const endpoint = "/functions/send-webhook";
+                    
           try {
             const response = await fetch(endpoint, {
               method: "POST",

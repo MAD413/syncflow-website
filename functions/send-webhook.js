@@ -1,24 +1,26 @@
+// This is the only file you need in the /functions directory.
+
 export default {
     async fetch(request, env, ctx) {
-        // Headers אוניברסליים ל-CORS כדי למנוע בעיות
+        // Headers אוניברסליים שמרשים הכל, כדי למנוע בעיות CORS
         const corsHeaders = {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type',
         };
 
-        // טיפול בבקשת OPTIONS (preflight) שהדפדפן שולח
+        // שלב 1: טיפול בבקשת "preflight" של OPTIONS שהדפדפן שולח
         if (request.method === 'OPTIONS') {
             return new Response(null, { headers: corsHeaders });
         }
 
-        // טיפול בבקשת POST מהטופס
+        // שלב 2: טיפול בבקשת POST מהטופס
         if (request.method === 'POST') {
             // *** החלף כאן את כתובת ה-Webhook שלך! ***
             const WEBHOOK_URL = 'https://mad.eseqtech.com/mad.eseqtech.com/9e38e452-ba2c-4eb1-83bc-7b2dc339e983';
 
             try {
-                // הדרך המודרנית והנכונה לקרוא את גוף הבקשה כ-JSON
+                // קריאת הנתונים מהטופס
                 const formData = await request.json();
                 
                 const dataToSend = {
@@ -27,7 +29,7 @@ export default {
                     message: formData.message
                 };
 
-                // שליחת הנתונים ל-Webhook
+                // שליחת הנתונים ל-Webhook שלך
                 await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -46,7 +48,7 @@ export default {
             }
         }
         
-        // אם הבקשה היא לא POST ולא OPTIONS, החזר שגיאה
+        // שלב 3: אם הבקשה היא לא POST ולא OPTIONS, החזר שגיאה
         return new Response('Method Not Allowed', {
             status: 405,
             headers: corsHeaders,
