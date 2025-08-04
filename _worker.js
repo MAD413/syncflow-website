@@ -2,43 +2,43 @@ export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
 
-        if (url.pathname === "/send-webhook") {
-            const corsHeaders = {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type",
-            };
-
-            if (request.method === "OPTIONS") {
-                return new Response(null, { headers: corsHeaders });
-            }
-
+        // אם הנתיב הוא /submit-form, הפעל את לוגיקת הטופס
+        if (url.pathname === "/submit-form") {
+            // טפל רק בבקשות POST
             if (request.method === "POST") {
                 try {
-                    const WEBHOOK_URL = 'https://mad.eseqtech.com/mad.eseqtech.com/9e38e452-ba2c-4eb1-83bc-7b2dc339e983'; // *** החלף כאן ***
-                    const formData = await request.json();
-                    const dataToSend = {
-                        name: formData.name, email: formData.email, message: formData.message
-                    };
+                    // *** החלף כאן את כתובת ה-Webhook שלך! ***
+                    const WEBHOOK_URL = 'https://mad.eseqtech.com/mad.eseqtech.com/9e38e452-ba2c-4eb1-83bc-7b2dc339e983';
+                    
+                    // קרא את הנתונים מהטופס (בפורמט FormData, לא JSON)
+                    const formData = await request.formData();
+                    const body = Object.fromEntries(formData);
 
                     await fetch(WEBHOOK_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(dataToSend)
+                        body: JSON.stringify(body)
                     });
 
-                    return new Response(JSON.stringify({ message: "Success" }), {
-                        status: 200,
-                        headers: { ...corsHeaders, "Content-Type": "application/json" },
-                    });
+                    // הפנה את המשתמש חזרה לדף הבית עם הודעת הצלחה
+                    // ודא שהכתובת כאן היא הדומיין המלא שלך!
+                    const successUrl = new URL("/", url);
+                    successUrl.searchParams.set("success", "true");
+                    return Response.redirect(successUrl, 302);
+
                 } catch (error) {
-                    return new Response("Internal Server Error", { status: 500, headers: corsHeaders });
+                    console.error('Error in worker:', error);
+                    // במקרה של שגיאה, הפנה חזרה עם הודעת שגיאה
+                    const errorUrl = new URL("/", url);
+                    errorUrl.searchParams.set("error", "true");
+                    return Response.redirect(errorUrl, 302);
                 }
             }
-
-            return new Response("Method Not Allowed", { status: 405, headers: corsHeaders });
+            // אם הבקשה היא לא POST, היא לא מורשית
+            return new Response("Method Not Allowed", { status: 405 });
         }
 
+        // לכל נתיב אחר, הגש את קבצי האתר הסטטיים
         return env.ASSETS.fetch(request);
     }
 };

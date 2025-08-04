@@ -53,7 +53,7 @@
         <section id="contact" class="page-section contact-section">
             <header class="section-header"><h2 class="section-title">מוכנים לבנות עסק יעיל יותר?</h2><p class="section-subtitle">השאירו פרטים ונחזור אליכם לשיחת ייעוץ ראשונית, ללא התחייבות.</p></header>
             <div id="form-container">
-                <form id="contact-form" class="contact-form">
+                <form class="contact-form" action="/submit-form" method="POST">
                     <input type="text" name="name" placeholder="שם מלא" required>
                     <input type="email" name="email" placeholder="כתובת אימייל" required>
                     <textarea name="message" rows="5" placeholder="איך נוכל לעזור?"></textarea>
@@ -72,54 +72,26 @@
     <!-- FOOTER -->
     <footer class="site-footer"><p>© 2024 SyncFlow. כל הזכויות שמורות.</p></footer>
 
-    <!-- ======================= Simplified JavaScript for Debugging ======================= -->
-    <script>
-        var form = document.getElementById("contact-form");
+<script>
+    // הפעל את Feather Icons
+    feather.replace();
+
+    // בדוק אם יש הודעת הצלחה בכתובת ה-URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('success')) {
+        const formContainer = document.getElementById('form-container');
+        const successMessage = document.getElementById('success-message');
         
-        async function handleSubmit(event) {
-          event.preventDefault();
-          var submitButton = form.querySelector("button");
-          var formContainer = document.getElementById("form-container");
-          var successMessage = document.getElementById("success-message");
-
-          submitButton.disabled = true;
-          submitButton.innerText = 'שולח...';
-
-          // איסוף הנתונים בצורה פשוטה
-          const formData = new FormData(event.target);
-          const data = Object.fromEntries(formData.entries());
-
-          // הנתיב ל-worker
-          const endpoint = "/send-webhook";
-
-          try {
-            const response = await fetch(endpoint, {
-              method: 'POST',
-              headers: {
-                // נשלח רק את ההדר הזה, הכי בסיסי שיש
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(data)
-            });
-
-            if (!response.ok) {
-                // אם התשובה לא תקינה, נזרוק שגיאה עם הסטטוס
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            // אם הגענו לכאן, הבקשה הצליחה
+        if (formContainer && successMessage) {
             formContainer.style.display = 'none';
             successMessage.style.display = 'block';
-            feather.replace();
-
-          } catch (error) {
-            console.error('Fetch Error:', error);
-            alert(`קרתה שגיאה בשליחת הטופס. פרטים בקונסול.`);
-            submitButton.disabled = false;
-            submitButton.innerText = 'שלח פרטים';
-          }
+            // גלול לאזור הודעת ההצלחה
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
         }
-        form.addEventListener("submit", handleSubmit);
-    </script>
+    }
+    if (urlParams.has('error')) {
+        alert('אופס! קרתה תקלה בשליחת הטופס. אנא נסה שוב.');
+    }
+</script>
     </body>
 </html>
