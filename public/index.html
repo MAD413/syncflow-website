@@ -53,7 +53,7 @@
         <section id="contact" class="page-section contact-section">
             <header class="section-header"><h2 class="section-title">מוכנים לבנות עסק יעיל יותר?</h2><p class="section-subtitle">השאירו פרטים ונחזור אליכם לשיחת ייעוץ ראשונית, ללא התחייבות.</p></header>
             <div id="form-container">
-                <form class="contact-form" action="/submit-form" method="POST">
+                <form id="contact-form" class="contact-form">
                     <input type="text" name="name" placeholder="שם מלא" required>
                     <input type="email" name="email" placeholder="כתובת אימייל" required>
                     <textarea name="message" rows="5" placeholder="איך נוכל לעזור?"></textarea>
@@ -72,26 +72,57 @@
     <!-- FOOTER -->
     <footer class="site-footer"><p>© 2024 SyncFlow. כל הזכויות שמורות.</p></footer>
 
-<script>
-    // הפעל את Feather Icons
-    feather.replace();
+    <!-- ======================= Final & Simple JavaScript (Direct Value Access) ======================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // הפעל את Feather Icons
+            feather.replace();
 
-    // בדוק אם יש הודעת הצלחה בכתובת ה-URL
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('success')) {
-        const formContainer = document.getElementById('form-container');
-        const successMessage = document.getElementById('success-message');
-        
-        if (formContainer && successMessage) {
-            formContainer.style.display = 'none';
-            successMessage.style.display = 'block';
-            // גלול לאזור הודעת ההצלחה
-            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-    if (urlParams.has('error')) {
-        alert('אופס! קרתה תקלה בשליחת הטופס. אנא נסה שוב.');
-    }
-</script>
-    </body>
+            const form = document.getElementById('contact-form');
+            const formContainer = document.getElementById('form-container');
+            const successMessage = document.getElementById('success-message');
+            const submitButton = form.querySelector('button[type="submit"]');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                // !!! חשוב: הדבק כאן את הכתובת שקיבלת מ-webhook.site !!!
+                const webhookUrl = 'https://mad.eseqtech.com/mad.eseqtech.com/9e38e452-ba2c-4eb1-83bc-7b2dc339e983';
+
+                // --- שינוי מרכזי: גישה ישירה לערכי השדות ---
+                const dataPayload = {
+                    name: form.elements.name.value,
+                    email: form.elements.email.value,
+                    message: form.elements.message.value
+                };
+                
+                submitButton.disabled = true;
+                submitButton.textContent = 'שולח...';
+
+                fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataPayload),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Webhook Error:', response.status, response.statusText);
+                    } else {
+                        console.log('Submission Successful');
+                    }
+                })
+                .catch(error => {
+                    console.error('Network Error:', error);
+                })
+                .finally(() => {
+                    formContainer.style.display = 'none';
+                    successMessage.style.display = 'block';
+                    feather.replace();
+                });
+            });
+        });
+    </script>
+            </body>
 </html>
